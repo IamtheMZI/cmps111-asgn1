@@ -60,8 +60,8 @@ void single_command(int filenumber, int mode,char** command){
 		pid_t pid = fork();
 		if(pid == 0){
 			if(filenumber < 0 || args[filenumber] == NULL){
-				printf("************************NULL**********************\n\n\n");
-				printf("************************NULL**********************\n");
+				//printf("************************NULL**********************\n\n\n");
+				//printf("************************NULL**********************\n");
 				execvp(command[0],command);
 			} else {
 				printf("%s\t%d\n",args[filenumber],pid);
