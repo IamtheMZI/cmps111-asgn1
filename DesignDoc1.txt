@@ -1,0 +1,151 @@
+Design Document: myshell
+Asg1
+Muhammad Z Ilahee
+milahee@ucsc.edu
+CMPS111 Spring 2016
+
+1. GOAL
+	The goal of this assignment is to build a program 
+using C and unix system calls which allows to run other
+programs conveniently. This is a sample FreeBSD shell program
+which will allow us to hone our C programming skill, be 
+familiar with unix system calls and use the programming tools
+provided in FreeBSD.
+
+2. ASSUMPTIONS
+	We assume that the support library shell.l and argshell.c
+are provided with sufficient resources. shell.l will be able to 
+read and parse a line of input. 
+
+3. DESIGN
+We will have to design the following functions
+
+a. exit
+  If exit is read by the parser, the program will exit and return.
+argv[0] will be read and if argc > 1 then an error will be printed.
+
+b. command without arguments
+  If argc == 1 and argv[0] is not exit then first the program will 
+check for if the command is valid or not. If the command is invalid 
+it will print out an error message saying that the command was not
+found. The program will wait before taking in the next command if
+the current command is running.
+
+c. command with more that one arguments
+  If argc > 1 then the program will execute part (b.) to check if
+the command is valid or not. If it's valid then the program will 
+check whether or not the arguments are valid. For any invalid arg-
+ument, the program will print out an error message. The program 
+will wait before taking in the next command if the current command 
+is running.
+
+d. input file
+  If argc > 1 and '<' character is found in the parsed strings, the 
+program will have to read from the input file. The program will check
+if the input file exists or not. If the file doesn't exist or cannot
+be open or read, then the program will print an error message. Part
+(c.) will be executed to run the rest of the program.
+
+e. output file
+  If argc > 1 and '>' character is found in the parsed strings, the
+program will redirect it's output to a file. If writing to the file
+is barred or error occurs, it will be printed. Part (c.) will be 
+executed for rest of the program to run.
+
+f. piping
+  If argc > 1 and '|' character is found in the parsed strings, the
+program will pipe it's first commands output to it's second commands
+input. For multiple pipes, output from the previous commands will be
+fed to the input of the following command. If any of the inputs have
+an error, that will be checked by using part (a.), (b.), (c.), (d.),
+& (e.).
+
+g. stderr
+  If argc > 1 and '&' character is found and piping or output 
+redircetion is found, the program will redirect it's output to stderr 
+and stdout. Any error in the command will be checked using part (a.), 
+(b.), (c.), (d.), (e.), & (f.).
+
+h. multiple commands
+  If argc > 1 and ';' character is found, the program will run multiple
+commands one after another. The program will look for errors in commands
+using part (a.), (b.), (c.), (d.), (e.), (f.), & (g.). A command will wait
+until the program executes it's previous command.
+
+i. cd
+  When cd command is found with argc == 1, the program will change it's 
+working directory to the home directory set by the enviroment. Else the
+program will check if the address after cd is valid or not and print an
+error message. If no error is found, chdir system call will be used to 
+change directory.
+
+4. PSEUDOCODE
+Procedure myshell
+	create counter
+	create argument array
+	   While true do
+			Read from get_args() and store in args
+			if args[0] is invalid
+				print to stderr
+				continue loop
+			else
+				if args[0] is exit
+					exit
+				else if args[0] is cd
+					check address validity and chdir					
+				else if ; found
+					for each command
+						manageCommands
+					end loop
+				else
+					manageCommands
+		End loop
+end Procedure
+
+Procedure manageCommands
+	if > found without &
+		fileWrite
+	else if < found without &
+		fileRead
+	else if | found without &
+		pipeCommand
+	else if & found	
+		if > found
+			fileWrite stderr
+		else if | found
+			pipeCommand stderr		
+	else
+		checkArgument
+		
+		
+end Procedure
+
+Procedure checkArgument
+	if argument found
+		check for argument validity
+	check for command validity and create process
+	// Fork child process
+	// Wait for completion
+	// Synchronize execution
+end Procedure
+
+Procedure fileWrite
+	Open file to write
+	dup stdout to file
+	close file
+end Procedure
+
+Procedure fileRead
+	Open file to read
+	dup file to stdin
+	close file
+end Procedure
+
+Procedure pipeCommand
+	for each command
+		checkArgument
+		dup stdout/stderr for next process
+		close process
+		pipe if commanded			
+	end loop
+end pipeCommand

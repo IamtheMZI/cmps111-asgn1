@@ -1,0 +1,7 @@
+scp milahee@unix.ucsc.edu:~/cmps111/asgn1/* .
+cd ..
+git add .
+git commit -m "Auto update $1"
+git push --all
+git log -n 1 | grep -m 1 --line-buffered "commit "|sed -e 's/\<commit\>//g'|sed 's/ //g' > commitid
+scp commitid milahee@unix.ucsc.edu:~/cmps111/asgn1/
