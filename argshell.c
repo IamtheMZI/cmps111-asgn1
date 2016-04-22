@@ -65,7 +65,11 @@ void single_command(int filenumber, int mode,char** command){
 				execvp(command[0],command);
 			} else {
 				printf("%s\t%d\n",args[filenumber],pid);
-				int fd = open(args[filenumber],O_RDWR);
+				int fd;
+				if(mode == WRITE)
+					fd = open(args[filenumber],O_WRONLY);
+				else if (mode == APPEND)
+					fd = open(args[filenumber],O_APPEND);
 				close(1);
 				dup(fd);
 				execvp(command[0],command);
